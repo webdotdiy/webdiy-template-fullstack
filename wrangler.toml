@@ -1,0 +1,24 @@
+#:schema node_modules/wrangler/config-schema.json
+# Rename `name` to something project-specific before the first deploy —
+# this becomes the workers.dev subdomain (`<name>.<your-acct>.workers.dev`).
+name = "webdiy-template-fullstack"
+main = "src/server/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# `@cloudflare/vite-plugin` builds the frontend into `./dist/client` and
+# the worker into `./dist/<worker-name>`. Workers Static Assets serves
+# `dist/client` via the ASSETS binding; the Hono app routes /api/* and
+# falls through to ASSETS for static paths.
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# Supabase env vars — set production secrets via `wrangler secret put`.
+# Use `.dev.vars` for local development (gitignored). Do NOT inline
+# production values in this file.
+#
+#   wrangler secret put SUPABASE_URL
+#   wrangler secret put SUPABASE_ANON_KEY
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY

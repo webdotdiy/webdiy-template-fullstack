@@ -1,0 +1,16 @@
+# Copy this file to `.dev.vars` and fill in your Supabase project values.
+# `.dev.vars` is gitignored — never commit real keys.
+#
+# Get these from your Supabase project at https://supabase.com/dashboard
+# under Project Settings → API.
+
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Vite reads VITE_-prefixed vars at build time and inlines them into
+# the browser bundle. The two below are duplicates of SUPABASE_URL +
+# SUPABASE_ANON_KEY exposed to the browser-side Supabase client. Never
+# expose SUPABASE_SERVICE_ROLE_KEY here — it bypasses RLS.
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key

@@ -1,0 +1,14 @@
+# Files locked from LLM edits. The chat handler refuses applyPatch /
+# writeFile against these unless the user explicitly asks for the
+# change.
+
+# Proxy-compat invariants live in vite.config.ts via the preset.
+vite.config.ts
+
+# Wrangler config touches deploy + bindings. Edit deliberately.
+wrangler.toml
+
+# Lockfile churn is noise. Add deps via `npm install` instead.
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
