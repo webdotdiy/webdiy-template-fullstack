@@ -5,7 +5,7 @@ What's pre-installed (do not re-install):
 - Tailwind 4 (configured via `@tailwindcss/vite`; tokens live in `src/index.css` under `@theme`)
 - Radix Primitives (full set), `class-variance-authority`, `clsx`, `tailwind-merge`
 - `motion` for animation, `lucide-react` for icons
-- `react-hook-form` + `zod` for forms + validation
+- `react-hook-form` + `zod` + `@hookform/resolvers` for forms + validation (zodResolver wires the two)
 - 5 base components in `src/components/ui/` (Button, Input, Card, Dialog, Dropdown) — Radix + cva, semantic-token-driven
 - Backend: `hono` + `@hono/zod-validator` (running on Workers via @cloudflare/vite-plugin)
 - Database / auth: `@supabase/supabase-js` (browser + server clients in `src/lib/supabase.ts`)

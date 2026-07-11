@@ -3,7 +3,7 @@
 # this becomes the workers.dev subdomain (`<name>.<your-acct>.workers.dev`).
 name = "webdiy-template-fullstack"
 main = "src/server/index.ts"
-compatibility_date = "2026-05-01"
+compatibility_date = "2026-07-01"
 compatibility_flags = ["nodejs_compat"]
 
 # `@cloudflare/vite-plugin` builds the frontend into `./dist/client` and
