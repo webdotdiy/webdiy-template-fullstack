@@ -29,4 +29,6 @@ Cloudflare Workers compatibility:
 - For Postgres access, use `@supabase/supabase-js` (HTTP/PostgREST) — never `pg` or `mysql2` (TCP, won't work on Workers).
 - No `fs.writeFile` / `fs.readFile` to local disk at runtime. Use Supabase Storage for blobs or R2 for static assets.
 
+Typecheck with `pnpm check` (runs `tsc -b`). A bare `tsc --noEmit` silently checks NOTHING here — the root tsconfig is solution-style (project references only), and `--noEmit` with no files is a no-op.
+
 Stock photos: Pexels or Unsplash URLs only, never download images.

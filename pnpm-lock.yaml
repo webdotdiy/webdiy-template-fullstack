@@ -69,8 +69,8 @@ importers:
         specifier: ^5.101.0
         version: 5.101.2(react@19.2.6)
       '@webdiy/starter-vite-preset':
-        specifier: ^1.1.0
-        version: 1.1.0(@cloudflare/vite-plugin@1.44.0(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))(workerd@1.20260708.1)(wrangler@4.110.0(@cloudflare/workers-types@5.20260711.1)))(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))
+        specifier: ^1.2.0
+        version: 1.2.0(@cloudflare/vite-plugin@1.44.0(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))(workerd@1.20260708.1)(wrangler@4.110.0(@cloudflare/workers-types@5.20260711.1)))(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -1756,11 +1756,11 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
-  '@webdiy/starter-vite-preset@1.1.0':
-    resolution: {integrity: sha512-SkAuIpAdyC3UYOex//6oD+1wgdH6vK8RaGCWd6T5fHpVN2ZLp9/2xy09BPw6wXEzN9UfTevhviGGYpolwOL1HQ==}
+  '@webdiy/starter-vite-preset@1.2.0':
+    resolution: {integrity: sha512-XrhpKVg8BoVx74MbmddL+SkDkpeAxmM9hAOhzxTAjwHePuIRH/Ik+PIHv7Nq+bWJ+qKqNnpTDJ/LYhiV5SwyVA==}
     peerDependencies:
-      '@cloudflare/vite-plugin': ^1.0.0
-      vite: ^6.0.0 || ^7.0.0
+      '@cloudflare/vite-plugin': ^1.36.0
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       '@cloudflare/vite-plugin':
         optional: true
@@ -3939,7 +3939,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@webdiy/starter-vite-preset@1.1.0(@cloudflare/vite-plugin@1.44.0(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))(workerd@1.20260708.1)(wrangler@4.110.0(@cloudflare/workers-types@5.20260711.1)))(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))':
+  '@webdiy/starter-vite-preset@1.2.0(@cloudflare/vite-plugin@1.44.0(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))(workerd@1.20260708.1)(wrangler@4.110.0(@cloudflare/workers-types@5.20260711.1)))(vite@7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0))':
     dependencies:
       vite: 7.3.6(@types/node@22.19.18)(jiti@2.7.0)(lightningcss@1.32.0)
     optionalDependencies:
