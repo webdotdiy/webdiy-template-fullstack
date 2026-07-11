@@ -32,3 +32,10 @@ Cloudflare Workers compatibility:
 Typecheck with `pnpm check` (runs `tsc -b`). A bare `tsc --noEmit` silently checks NOTHING here — the root tsconfig is solution-style (project references only), and `--noEmit` with no files is a no-op.
 
 Stock photos: Pexels or Unsplash URLs only, never download images.
+
+Neon (WebDIY-provisioned database + auth) — available when the project has the database integration:
+- Detection: `VITE_NEON_AUTH_URL` / `VITE_NEON_DATA_API_URL` present in `.env` means the platform has provisioned a Neon Postgres database + Neon Auth for this project. When they are absent, the plumbing below is inert (`/api/auth/*` answers 501) — don't build auth flows on it until the integration is enabled.
+- Auth: a first-party Neon Auth proxy is pre-mounted at `/api/auth/*` (`src/server/neon-auth/`; the `vendor/` subdirectory is third-party code — never edit it). Browser side, use `authClient` from `src/lib/neon-auth.ts` (`signUp.email`, `signIn.email`, `useSession()`, `signOut`) — it already points at the proxy; never call the Neon Auth upstream directly from the browser (third-party cookies break in Safari).
+- Data: use `createDataClient()` from `src/lib/neon-data.ts` (PostgREST query builder over the project's own Postgres). It attaches the signed-in user's JWT automatically; Postgres validates it and Row-Level Security enforces access IN the database. Every table you expose MUST have RLS policies (`auth.user_id()` is the current user's id) — there is no other permission layer.
+- Schema: create/alter tables through the `applyMigration` tool (additive-only; it records the migration under `migrations/` automatically). Read/inspect with the `queryDatabase` tool or `psql "$DATABASE_URL_RO"`.
+- Protecting your own /api/* routes: `verifyAuthToken(request)` from `src/server/neon-auth/require-user.ts` verifies the bearer JWT against the project's JWKS; the browser gets that token from `getAuthToken()` in `src/lib/neon-auth.ts`.

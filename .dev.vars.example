@@ -14,3 +14,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # expose SUPABASE_SERVICE_ROLE_KEY here — it bypasses RLS.
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# --- Neon Auth + Data API (optional) --------------------------------------
+# On WebDIY these are provisioned automatically when the project enables the
+# database integration: the VITE_NEON_* public values are managed in `.env`,
+# and NEON_AUTH_SERVER_KEY is delivered as a secret binding — nothing to set
+# here. For standalone use outside WebDIY: put the VITE_NEON_* values in
+# `.env` (they are public endpoint URLs) and the server key below.
+#
+# NEON_AUTH_SERVER_KEY=your-neon-auth-secret-server-key

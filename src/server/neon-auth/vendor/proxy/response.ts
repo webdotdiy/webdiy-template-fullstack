@@ -1,0 +1,73 @@
+import { mintSessionDataFromResponse } from '../session/minting';
+import { parseSetCookies, serializeSetCookie } from '../utils/cookies';
+import type { SessionCookieConfig } from '../config';
+
+// Allowlist of response headers that we want to proxy to the client from Neon Auth.
+const RESPONSE_HEADERS_ALLOWLIST = ['content-type', 'content-length', 'content-encoding', 'transfer-encoding',
+    'connection', 'date',
+   'set-cookie', 'set-auth-jwt', 'set-auth-token', 'x-neon-ret-request-id'];
+
+/**
+ * Handles responses from upstream Neon Auth server
+ * - Proxies allowed headers to client
+ * - Mints session data cookie if session token is present
+ *
+ * @param response - Response from upstream Neon Auth server
+ * @param baseUrl - Base URL of Neon Auth server
+ * @param cookieConfig - Session cookie configuration
+ * @returns New Response with proxied headers and session data cookie
+ */
+export const handleAuthResponse = async (
+  response: Response,
+  baseUrl: string,
+  cookieConfig: SessionCookieConfig
+) => {
+  const responseHeaders = prepareResponseHeaders(response, cookieConfig);
+
+  // Mint session data cookie from upstream response
+  const sessionDataCookie = await mintSessionDataFromResponse(response.headers, baseUrl, cookieConfig);
+  if (sessionDataCookie) {
+    responseHeaders.append('Set-Cookie', sessionDataCookie);
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+  })
+}
+
+const prepareResponseHeaders = (response: Response, cookieConfig: SessionCookieConfig) => {
+  const headers = new Headers();
+  const effectiveSameSite = cookieConfig.sameSite ?? 'strict';
+  const { domain } = cookieConfig;
+  for (const header of RESPONSE_HEADERS_ALLOWLIST) {
+    // Special handling for set-cookie: HTTP allows multiple Set-Cookie headers
+    if (header === 'set-cookie') {
+      const cookies = response.headers.getSetCookie();
+      for (const cookieHeader of cookies) {
+        // Always sanitize upstream cookie flags before forwarding to the browser:
+        // - Strip Partitioned: Safari does not send Partitioned cookies on top-level navigations,
+        //   which breaks the OAuth challenge exchange when the callback hits a middleware route.
+        //   The flag is also only meaningful for third-party contexts; proxied cookies are first-party.
+        // - Apply configured SameSite (default strict): upstream may send SameSite=None with Partitioned.
+        // Domain assignment is the only other conditional step.
+        const parsedCookies = parseSetCookies(cookieHeader);
+        for (const parsedCookie of parsedCookies) {
+          parsedCookie.partitioned = undefined;
+          parsedCookie.sameSite = effectiveSameSite;
+          if (domain) {
+            parsedCookie.domain = domain;
+          }
+          headers.append('Set-Cookie', serializeSetCookie(parsedCookie));
+        }
+      }
+    } else {
+      const value = response.headers.get(header);
+      if (value) {
+        headers.set(header, value);
+      }
+    }
+  }
+  return headers;
+}
