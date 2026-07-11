@@ -4,9 +4,12 @@ The default WebDIY template. Vite + React + TypeScript + Tailwind 4 + Hono + Sup
 
 ## Stack
 
-- **Frontend:** Vite 6, React 19, TypeScript, Tailwind 4, Radix Primitives, cva, motion
+- **Frontend:** Vite 7, React 19, TypeScript, Tailwind 4, Radix Primitives, cva, motion
 - **Backend:** Hono on Cloudflare Workers (same Worker as the frontend, via `@cloudflare/vite-plugin`)
 - **Database + Auth + Storage:** Supabase
+- **Neon (WebDIY-provisioned, optional):** Neon Postgres Data API + Neon Auth via a
+  first-party proxy — pre-wired but inert until the project's database integration is
+  provisioned (see "Neon" below)
 - **Routing:** React Router 7
 - **Forms:** React Hook Form + Zod
 - **Server state:** TanStack Query
@@ -60,6 +63,8 @@ npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 - [src/hooks/](src/hooks) — shared React hooks.
 - [src/lib/cn.ts](src/lib/cn.ts) — `clsx + tailwind-merge` helper.
 - [src/lib/supabase.ts](src/lib/supabase.ts) — `createBrowserClient()` for React, `createServerClient(env)` for Hono handlers.
+- [src/server/neon-auth/](src/server/neon-auth) — Neon Auth first-party proxy (mounted at `/api/auth/*`) + `require-user.ts` JWKS bearer verification. The `vendor/` subdirectory is third-party code — don't edit it.
+- [src/lib/neon-auth.ts](src/lib/neon-auth.ts) / [src/lib/neon-data.ts](src/lib/neon-data.ts) — browser auth client (against the proxy) + Data API PostgREST client.
 - [src/index.css](src/index.css) — design tokens. Replace the placeholder OKLCH palette before building components.
 - [migrations/](migrations) — Supabase SQL migrations. Apply via `supabase db push`.
 - [vite.config.ts](vite.config.ts) — uses `@webdiy/starter-vite-preset` (registers `@cloudflare/vite-plugin` + sets the proxy-compat invariants).
@@ -71,10 +76,33 @@ The placeholder palette in `src/index.css` is intentionally generic. Replace it 
 
 Add new component variants by extending the `cva()` call in `src/components/ui/<name>.tsx`. Don't paper over with inline `className="bg-blue-600 ..."` at call sites.
 
+## Neon (WebDIY-provisioned database + auth)
+
+On WebDIY, enabling the project's database integration provisions a Neon Postgres
+database + Neon Auth and delivers the config automatically: `VITE_NEON_AUTH_URL`,
+`VITE_NEON_JWKS_URL`, and `VITE_NEON_DATA_API_URL` appear in `.env` (public endpoint
+URLs) and `NEON_AUTH_SERVER_KEY` arrives as a Worker binding. Until then everything
+below is inert — `/api/auth/*` answers 501.
+
+- **Auth:** the worker proxies `/api/auth/*` to the Neon Auth upstream and re-mints
+  session cookies first-party + host-only ([src/server/neon-auth/](src/server/neon-auth)).
+  Browser side, use `authClient` from [src/lib/neon-auth.ts](src/lib/neon-auth.ts)
+  (`signIn.email`, `signUp.email`, `useSession()`, `signOut`) — never call the Neon
+  upstream directly from the browser (third-party cookies break in Safari).
+- **Data:** `createDataClient()` from [src/lib/neon-data.ts](src/lib/neon-data.ts)
+  queries the Data API with the signed-in user's JWT attached; Postgres validates it
+  and **Row-Level Security is the entire permission layer** — every exposed table
+  needs RLS policies (`auth.user_id()` is the current user's id).
+- **Protecting your own routes:** `verifyAuthToken(request)` from
+  [src/server/neon-auth/require-user.ts](src/server/neon-auth/require-user.ts); the
+  browser obtains the bearer token via `getAuthToken()`.
+- **Standalone use** (outside WebDIY): put the `VITE_NEON_*` URLs in `.env` and
+  `NEON_AUTH_SERVER_KEY` in `.dev.vars` (see `.dev.vars.example`).
+
 ## Cloudflare Workers compatibility
 
 - **Use Hono.** Express / Fastify / NestJS appear to work in dev but will not deploy.
-- **Use `@supabase/supabase-js` (HTTP) for Postgres.** `pg` / `mysql2` over native TCP do not work on Workers.
+- **Use HTTP for Postgres** — `@supabase/supabase-js` (PostgREST) or the Neon Data API client. `pg` / `mysql2` over native TCP do not work on Workers.
 - **No filesystem writes.** Workers have no persistent local disk. Use Supabase Storage for blobs or R2.
 - **No native modules** (`bcrypt`, `sharp`, `canvas`). Use pure-JS alternatives or Workers-compatible services.
 
