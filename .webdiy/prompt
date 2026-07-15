@@ -1,4 +1,4 @@
-This is the `webdiy-template-fullstack` template — Vite + React + TypeScript + Tailwind 4 + Hono + Supabase, deployed to Cloudflare Workers via `@cloudflare/vite-plugin`. Frontend and backend bundle as one Worker.
+This is the `webdiy-template-fullstack` template — Vite + React + TypeScript + Tailwind 4 + Hono, deployed to Cloudflare Workers via `@cloudflare/vite-plugin`. Frontend and backend bundle as one Worker. Database + auth come from WebDIY's managed Postgres (see the last section).
 
 What's pre-installed (do not re-install):
 - Frontend: React 19 + react-dom + react-router-dom + @tanstack/react-query
@@ -8,34 +8,30 @@ What's pre-installed (do not re-install):
 - `react-hook-form` + `zod` + `@hookform/resolvers` for forms + validation (zodResolver wires the two)
 - 5 base components in `src/components/ui/` (Button, Input, Card, Dialog, Dropdown) — Radix + cva, semantic-token-driven
 - Backend: `hono` + `@hono/zod-validator` (running on Workers via @cloudflare/vite-plugin)
-- Database / auth: `@supabase/supabase-js` (browser + server clients in `src/lib/supabase.ts`)
+- Database / auth: the managed-Postgres plumbing in `src/server/neon-auth/` + `src/lib/neon-auth.ts` / `src/lib/neon-data.ts` (see the last section)
 
 Architecture:
 - `src/server/index.ts` — Hono app entry. Routes /api/* and falls through to the ASSETS binding for static paths. Add new routes under `src/server/routes/` and mount via `app.route('/api/<name>', module)`.
 - `src/components/ui/` — Radix-backed base components. Customise variants by extending `cva()` rather than overriding inline `className`.
 - `src/features/<feature>/` — organise non-trivial app code by feature (e.g. `src/features/todos/{TodoList.tsx, useTodos.ts, types.ts}`).
-- `src/lib/supabase.ts` — `createBrowserClient()` for the React side, `createServerClient(env)` for Hono handlers.
-- `migrations/` — Supabase SQL migrations. Run via `supabase db push` once the user has a project linked.
-
-Setup expectations:
-- The user must create a Supabase project at https://supabase.com and paste keys into `.dev.vars` (copy from `.dev.vars.example`). If they have not done this, the dev server boots but Supabase calls fail — say so clearly.
-- For CF deploy, `wrangler secret put SUPABASE_URL` (and the other two keys) before `wrangler deploy`.
+- `migrations/` — the app's SQL migrations; the `applyMigration` tool records each applied change here automatically.
 
 Design tokens:
 - Replace the placeholder OKLCH palette in `src/index.css` BEFORE writing components. All 5 base components read from semantic tokens (`bg-primary`, `text-foreground`, `border-border` etc.); changing the tokens reskins the whole app.
+- `src/App.tsx` is a deliberately minimal placeholder — replace it outright with the real app shell on the first build.
 
 Cloudflare Workers compatibility:
 - Hono runs on Workers. Do NOT pull in Node-only HTTP frameworks (Express, Fastify, NestJS) — they will appear to work in the sandbox but will not deploy.
-- For Postgres access, use `@supabase/supabase-js` (HTTP/PostgREST) — never `pg` or `mysql2` (TCP, won't work on Workers).
-- No `fs.writeFile` / `fs.readFile` to local disk at runtime. Use Supabase Storage for blobs or R2 for static assets.
+- Postgres access is HTTP-based (the managed database's Data API, or `@neondatabase/serverless` for a BYO connection string) — never `pg` or `mysql2` (TCP, won't work on Workers).
+- No `fs.writeFile` / `fs.readFile` to local disk at runtime. Use R2 for blobs and static assets.
 
 Typecheck with `pnpm check` (runs `tsc -b`). A bare `tsc --noEmit` silently checks NOTHING here — the root tsconfig is solution-style (project references only), and `--noEmit` with no files is a no-op.
 
 Stock photos: Pexels or Unsplash URLs only, never download images.
 
-Neon (WebDIY-provisioned database + auth) — available when the project has the database integration:
-- Detection: `VITE_NEON_AUTH_URL` / `VITE_NEON_DATA_API_URL` present in `.env` means the platform has provisioned a Neon Postgres database + Neon Auth for this project. When they are absent, the plumbing below is inert (`/api/auth/*` answers 501) — don't build auth flows on it until the integration is enabled.
-- Auth: a first-party Neon Auth proxy is pre-mounted at `/api/auth/*` (`src/server/neon-auth/`; the `vendor/` subdirectory is third-party code — never edit it). Browser side, use `authClient` from `src/lib/neon-auth.ts` (`signUp.email`, `signIn.email`, `useSession()`, `signOut`) — it already points at the proxy; never call the Neon Auth upstream directly from the browser (third-party cookies break in Safari).
+Database + auth (WebDIY's managed Postgres) — available when the project has the database integration:
+- Detection: `VITE_NEON_AUTH_URL` / `VITE_NEON_DATA_API_URL` present in `.env` means the platform has provisioned a Postgres database + auth for this project. When they are absent, the plumbing below is inert (`/api/auth/*` answers 501) — don't build auth flows on it until the integration is enabled.
+- Auth: a first-party auth proxy is pre-mounted at `/api/auth/*` (`src/server/neon-auth/`; the `vendor/` subdirectory is third-party code — never edit it). Browser side, use `authClient` from `src/lib/neon-auth.ts` (`signUp.email`, `signIn.email`, `useSession()`, `signOut`) — it already points at the proxy; never call the auth upstream directly from the browser (third-party cookies break in Safari).
 - Data: use `createDataClient()` from `src/lib/neon-data.ts` (PostgREST query builder over the project's own Postgres). It attaches the signed-in user's JWT automatically; Postgres validates it and Row-Level Security enforces access IN the database. Every table you expose MUST have RLS policies (`auth.user_id()` is the current user's id) — there is no other permission layer.
 - Schema: create/alter tables through the `applyMigration` tool (additive-only; it records the migration under `migrations/` automatically). Read/inspect with the `queryDatabase` tool or `psql "$DATABASE_URL_RO"`.
 - Protecting your own /api/* routes: `verifyAuthToken(request)` from `src/server/neon-auth/require-user.ts` verifies the bearer JWT against the project's JWKS; the browser gets that token from `getAuthToken()` in `src/lib/neon-auth.ts`.

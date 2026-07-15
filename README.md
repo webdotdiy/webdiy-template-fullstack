@@ -1,15 +1,14 @@
 # webdiy-template-fullstack
 
-The default WebDIY template. Vite + React + TypeScript + Tailwind 4 + Hono + Supabase, deployed to Cloudflare Workers via `@cloudflare/vite-plugin`. Frontend and backend bundle and deploy as one Worker.
+The default WebDIY template. Vite + React + TypeScript + Tailwind 4 + Hono, deployed to Cloudflare Workers via `@cloudflare/vite-plugin`. Frontend and backend bundle and deploy as one Worker.
 
 ## Stack
 
 - **Frontend:** Vite 7, React 19, TypeScript, Tailwind 4, Radix Primitives, cva, motion
 - **Backend:** Hono on Cloudflare Workers (same Worker as the frontend, via `@cloudflare/vite-plugin`)
-- **Database + Auth + Storage:** Supabase
-- **Neon (WebDIY-provisioned, optional):** Neon Postgres Data API + Neon Auth via a
-  first-party proxy — pre-wired but inert until the project's database integration is
-  provisioned (see "Neon" below)
+- **Database + Auth:** Neon Postgres Data API + Neon Auth via a first-party proxy —
+  pre-wired but inert until the project's database integration is provisioned
+  (see "Neon" below)
 - **Routing:** React Router 7
 - **Forms:** React Hook Form + Zod
 - **Server state:** TanStack Query
@@ -17,14 +16,13 @@ The default WebDIY template. Vite + React + TypeScript + Tailwind 4 + Hono + Sup
 
 ## Setup
 
-1. **Create a Supabase project** at https://supabase.com.
-2. **Copy `.dev.vars.example` to `.dev.vars`** and fill in your Supabase URL + keys (Project Settings → API).
-3. **Install + run:**
+```bash
+npm install
+npm run dev
+```
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+On WebDIY the database + auth are provisioned from the app (nothing to configure).
+For standalone use, see "Neon" below and `.dev.vars.example`.
 
 The dev server runs the Vite frontend and the Hono Worker together via `@cloudflare/vite-plugin`. Hits to `/api/*` route through Hono; other paths serve from the SPA.
 
@@ -46,12 +44,11 @@ npx wrangler login
 npm run deploy
 ```
 
-On first deploy, set production secrets:
+On first deploy, set production secrets (standalone use only — WebDIY injects
+them at publish):
 
 ```bash
-npx wrangler secret put SUPABASE_URL
-npx wrangler secret put SUPABASE_ANON_KEY
-npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+npx wrangler secret put NEON_AUTH_SERVER_KEY
 ```
 
 ## Architecture
@@ -62,11 +59,10 @@ npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 - [src/features/](src/features) — organise app code by feature (e.g. `src/features/todos/{TodoList.tsx, useTodos.ts, types.ts}`).
 - [src/hooks/](src/hooks) — shared React hooks.
 - [src/lib/cn.ts](src/lib/cn.ts) — `clsx + tailwind-merge` helper.
-- [src/lib/supabase.ts](src/lib/supabase.ts) — `createBrowserClient()` for React, `createServerClient(env)` for Hono handlers.
 - [src/server/neon-auth/](src/server/neon-auth) — Neon Auth first-party proxy (mounted at `/api/auth/*`) + `require-user.ts` JWKS bearer verification. The `vendor/` subdirectory is third-party code — don't edit it.
 - [src/lib/neon-auth.ts](src/lib/neon-auth.ts) / [src/lib/neon-data.ts](src/lib/neon-data.ts) — browser auth client (against the proxy) + Data API PostgREST client.
 - [src/index.css](src/index.css) — design tokens. Replace the placeholder OKLCH palette before building components.
-- [migrations/](migrations) — Supabase SQL migrations. Apply via `supabase db push`.
+- [migrations/](migrations) — the app's SQL migrations. On WebDIY, the `applyMigration` tool records each applied change here.
 - [vite.config.ts](vite.config.ts) — uses `@webdiy/starter-vite-preset` (registers `@cloudflare/vite-plugin` + sets the proxy-compat invariants).
 - [wrangler.toml](wrangler.toml) — CF Workers deploy config.
 
@@ -102,20 +98,7 @@ below is inert — `/api/auth/*` answers 501.
 ## Cloudflare Workers compatibility
 
 - **Use Hono.** Express / Fastify / NestJS appear to work in dev but will not deploy.
-- **Use HTTP for Postgres** — `@supabase/supabase-js` (PostgREST) or the Neon Data API client. `pg` / `mysql2` over native TCP do not work on Workers.
-- **No filesystem writes.** Workers have no persistent local disk. Use Supabase Storage for blobs or R2.
+- **Use HTTP for Postgres** — the Neon Data API client, or `@neondatabase/serverless` for a raw connection string. `pg` / `mysql2` over native TCP do not work on Workers.
+- **No filesystem writes.** Workers have no persistent local disk. Use R2 for blobs.
 - **No native modules** (`bcrypt`, `sharp`, `canvas`). Use pure-JS alternatives or Workers-compatible services.
 
-## How do I set up Supabase?
-
-1. Sign up at https://supabase.com and create a new project.
-2. Open Project Settings → API. Copy the **URL**, **anon key**, and **service role key**.
-3. Paste into `.dev.vars`:
-   ```
-   SUPABASE_URL=https://<ref>.supabase.co
-   SUPABASE_ANON_KEY=<anon>
-   SUPABASE_SERVICE_ROLE_KEY=<service-role>
-   VITE_SUPABASE_URL=https://<ref>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon>
-   ```
-4. (Optional) Apply the example migration: `supabase db push` (requires `supabase` CLI + `supabase link`).

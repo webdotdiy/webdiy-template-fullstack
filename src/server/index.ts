@@ -4,9 +4,6 @@ import { handleNeonAuth, type NeonAuthBindings } from './neon-auth';
 
 type Bindings = NeonAuthBindings & {
   ASSETS: Fetcher;
-  SUPABASE_URL: string;
-  SUPABASE_ANON_KEY: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
