@@ -9,9 +9,6 @@ interface ImportMetaEnv {
 
   /** PostgREST Data API endpoint for the project's Neon database. */
   readonly VITE_NEON_DATA_API_URL?: string;
-
-  /** Publishable client key issued with the auth instance. */
-  readonly VITE_NEON_AUTH_PUBLISHABLE_KEY?: string;
 }
 
 interface ImportMeta {

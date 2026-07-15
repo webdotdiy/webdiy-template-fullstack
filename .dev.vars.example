@@ -7,8 +7,10 @@
 # --- Neon Auth + Data API --------------------------------------------------
 # On WebDIY these are provisioned automatically when the project enables the
 # database integration: the VITE_NEON_* public values are managed in `.env`,
-# and NEON_AUTH_SERVER_KEY is delivered as a secret binding. For standalone
+# and NEON_AUTH_COOKIE_SECRET is delivered as a secret binding. For standalone
 # use outside WebDIY: put the VITE_NEON_* values in `.env` (they are public
-# endpoint URLs) and the server key below.
+# endpoint URLs) and generate the cookie secret below yourself — it signs the
+# auth proxy's session cache cookie (any high-entropy value ≥32 chars works,
+# e.g. `openssl rand -base64 32`).
 #
-# NEON_AUTH_SERVER_KEY=your-neon-auth-secret-server-key
+# NEON_AUTH_COOKIE_SECRET=your-generated-cookie-secret

@@ -10,8 +10,8 @@ import { handleAuthProxyRequest } from './vendor/proxy';
  * hostname.
  *
  * Configuration comes from the platform-managed variables:
- *   - VITE_NEON_AUTH_URL   (public, .env)  — the upstream base URL
- *   - NEON_AUTH_SERVER_KEY (secret binding) — signs the session cache cookie
+ *   - VITE_NEON_AUTH_URL      (public, .env)  — the upstream base URL
+ *   - NEON_AUTH_COOKIE_SECRET (secret binding) — signs the session cache cookie
  *
  * When either is absent the mount answers 501 so the app still builds and
  * runs before a database/auth has been provisioned for the project.
@@ -20,16 +20,16 @@ import { handleAuthProxyRequest } from './vendor/proxy';
 const AUTH_MOUNT_PREFIX = '/api/auth/';
 
 export interface NeonAuthBindings {
-  NEON_AUTH_SERVER_KEY?: string;
+  NEON_AUTH_COOKIE_SECRET?: string;
 }
 
 export function neonAuthConfigured(env: NeonAuthBindings): boolean {
-  return Boolean(import.meta.env.VITE_NEON_AUTH_URL && env.NEON_AUTH_SERVER_KEY);
+  return Boolean(import.meta.env.VITE_NEON_AUTH_URL && env.NEON_AUTH_COOKIE_SECRET);
 }
 
 export async function handleNeonAuth(request: Request, env: NeonAuthBindings): Promise<Response> {
   const baseUrl = import.meta.env.VITE_NEON_AUTH_URL;
-  const cookieSecret = env.NEON_AUTH_SERVER_KEY;
+  const cookieSecret = env.NEON_AUTH_COOKIE_SECRET;
 
   if (!baseUrl || !cookieSecret) {
     return Response.json(

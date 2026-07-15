@@ -48,7 +48,7 @@ On first deploy, set production secrets (standalone use only — WebDIY injects
 them at publish):
 
 ```bash
-npx wrangler secret put NEON_AUTH_SERVER_KEY
+npx wrangler secret put NEON_AUTH_COOKIE_SECRET
 ```
 
 ## Architecture
@@ -77,7 +77,7 @@ Add new component variants by extending the `cva()` call in `src/components/ui/<
 On WebDIY, enabling the project's database integration provisions a Neon Postgres
 database + Neon Auth and delivers the config automatically: `VITE_NEON_AUTH_URL`,
 `VITE_NEON_JWKS_URL`, and `VITE_NEON_DATA_API_URL` appear in `.env` (public endpoint
-URLs) and `NEON_AUTH_SERVER_KEY` arrives as a Worker binding. Until then everything
+URLs) and `NEON_AUTH_COOKIE_SECRET` arrives as a Worker binding. Until then everything
 below is inert — `/api/auth/*` answers 501.
 
 - **Auth:** the worker proxies `/api/auth/*` to the Neon Auth upstream and re-mints
@@ -93,7 +93,7 @@ below is inert — `/api/auth/*` answers 501.
   [src/server/neon-auth/require-user.ts](src/server/neon-auth/require-user.ts); the
   browser obtains the bearer token via `getAuthToken()`.
 - **Standalone use** (outside WebDIY): put the `VITE_NEON_*` URLs in `.env` and
-  `NEON_AUTH_SERVER_KEY` in `.dev.vars` (see `.dev.vars.example`).
+  a self-generated `NEON_AUTH_COOKIE_SECRET` in `.dev.vars` (see `.dev.vars.example`).
 
 ## Cloudflare Workers compatibility
 
