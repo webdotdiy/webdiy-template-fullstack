@@ -17,7 +17,17 @@ import { BetterAuthReactAdapter } from '@neondatabase/neon-js/auth/react';
 /** Whether this project has Neon Auth provisioned (false until the database integration is enabled). */
 export const neonAuthEnabled = Boolean(import.meta.env.VITE_NEON_AUTH_URL);
 
-export const authClient = createAuthClient('/api/auth', { adapter: BetterAuthReactAdapter() });
+/*
+ * `createAuthClient` requires an ABSOLUTE base URL — a bare '/api/auth'
+ * throws `BetterAuthError: Invalid base URL` at module init, taking the
+ * whole app down. Resolve against the current origin in the browser; the
+ * relative fallback keeps non-DOM evaluation (worker-side import of this
+ * module's other exports) from touching `window`.
+ */
+const authBaseUrl =
+  typeof window !== 'undefined' ? new URL('/api/auth', window.location.origin).toString() : '/api/auth';
+
+export const authClient = createAuthClient(authBaseUrl, { adapter: BetterAuthReactAdapter() });
 
 /**
  * A short-lived JWT for the signed-in user — attach as
