@@ -4,12 +4,12 @@ The default WebDIY template. Vite + React + TypeScript + Tailwind 4 + Hono, depl
 
 ## Stack
 
-- **Frontend:** Vite 7, React 19, TypeScript, Tailwind 4, Radix Primitives, cva, motion
+- **Frontend:** Vite 8, React 19, TypeScript, Tailwind 4, Radix Primitives, cva, motion
 - **Backend:** Hono on Cloudflare Workers (same Worker as the frontend, via `@cloudflare/vite-plugin`)
 - **Database + Auth:** Neon Postgres Data API + Neon Auth via a first-party proxy —
   pre-wired but inert until the project's database integration is provisioned
   (see "Neon" below)
-- **Routing:** React Router 7
+- **Routing:** React Router 7 — import from `react-router` (`react-router-dom` is not installed; lint rejects it)
 - **Forms:** React Hook Form + Zod
 - **Server state:** TanStack Query
 - **5 base components** in [src/components/ui/](src/components/ui) — Button, Input, Card, Dialog, Dropdown
@@ -53,8 +53,9 @@ npx wrangler secret put NEON_AUTH_COOKIE_SECRET
 
 ## Architecture
 
-- [src/server/index.ts](src/server/index.ts) — Hono app entry. Routes `/api/*` and falls through to the `ASSETS` binding for static paths.
-- [src/server/routes/](src/server/routes) — split routes per resource here, mount them via `app.route('/api/<name>', module)`.
+- [src/server/index.ts](src/server/index.ts) — Hono app entry. Routes `/api/*` and falls through to the `ASSETS` binding for static paths. Exports `AppType` for the typed client.
+- [src/server/routes/](src/server/routes) — split routes per resource here and chain them in `src/server/index.ts` with `.route('/api/<name>', module)`.
+- [src/lib/api.ts](src/lib/api.ts) — typed client (`hc<AppType>`) for this app's own `/api/*` routes.
 - [src/components/ui/](src/components/ui) — base UI primitives styled per project. Customise variants via `cva` rather than overriding inline.
 - [src/features/](src/features) — organise app code by feature (e.g. `src/features/todos/{TodoList.tsx, useTodos.ts, types.ts}`).
 - [src/hooks/](src/hooks) — shared React hooks.
@@ -89,6 +90,17 @@ below is inert — `/api/auth/*` answers 501.
   queries the Data API with the signed-in user's JWT attached; Postgres validates it
   and **Row-Level Security is the entire permission layer** — every exposed table
   needs RLS policies (`auth.user_id()` is the current user's id).
+- **Server-side writes:** when RLS cannot express the rule (writes across users,
+  shared counters, anything needing a secret, webhooks), write through a Hono route:
+  validate the body with `zValidator`, identify the caller with `verifyAuthToken`,
+  and query with `neon(env.DATABASE_URL)` from `@neondatabase/serverless`.
+  `DATABASE_URL` connects as the app's own role, `app_rw`, which carries no
+  signed-in user: give each table the route touches a policy for it
+  (`create policy server_access on <table> to app_rw using (true) with check (true)`)
+  and scope user policies `to authenticated`. The route is then the permission
+  check. Call it from the browser through `api` in [src/lib/api.ts](src/lib/api.ts).
+  The pattern, unmounted, is
+  [src/server/routes/example-server-write.ts](src/server/routes/example-server-write.ts).
 - **Protecting your own routes:** `verifyAuthToken(request)` from
   [src/server/neon-auth/require-user.ts](src/server/neon-auth/require-user.ts); the
   browser obtains the bearer token via `getAuthToken()`.

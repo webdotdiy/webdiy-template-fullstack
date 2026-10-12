@@ -1,7 +1,7 @@
 This is the `webdiy-template-fullstack` template — Vite + React + TypeScript + Tailwind 4 + Hono, deployed to Cloudflare Workers via `@cloudflare/vite-plugin`. Frontend and backend bundle as one Worker. Database + auth come from WebDIY's managed Postgres (see the last section).
 
 What's pre-installed (do not re-install):
-- Frontend: React 19 + react-dom + react-router-dom + @tanstack/react-query
+- Frontend: React 19 + react-dom + react-router (import from `react-router`, never `react-router-dom`) + @tanstack/react-query
 - Tailwind 4 (configured via `@tailwindcss/vite`; tokens live in `src/index.css` under `@theme`)
 - Radix Primitives (full set), `class-variance-authority`, `clsx`, `tailwind-merge`
 - `motion` for animation, `lucide-react` for icons
