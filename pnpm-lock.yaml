@@ -75,8 +75,8 @@ importers:
         specifier: ^5.101.0
         version: 5.101.2(react@19.2.6)
       '@webdiy/starter-vite-preset':
-        specifier: ^2.0.0
-        version: 2.0.0(@cloudflare/vite-plugin@1.63.1(@types/node@22.19.18)(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))(wrangler@4.149.0(@cloudflare/workers-types@5.20261012.1)(@types/node@22.19.18)))(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))
+        specifier: ^2.0.1
+        version: 2.0.1(@cloudflare/vite-plugin@1.63.1(@types/node@22.19.18)(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))(wrangler@4.149.0(@cloudflare/workers-types@5.20261012.1)(@types/node@22.19.18)))(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))
       better-auth:
         specifier: 1.4.18
         version: 1.4.18(pg@8.22.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1981,8 +1981,8 @@ packages:
       oxc-transform-react:
         optional: true
 
-  '@webdiy/starter-vite-preset@2.0.0':
-    resolution: {integrity: sha512-UJ2AHGmYio1CVsEYM5HShY5eQ2qfvYWcfTvR9mkUG7gMny9SA5AzobIQwuaeiscM2JRWjWjT0EWa/9qqOZR+Pw==}
+  '@webdiy/starter-vite-preset@2.0.1':
+    resolution: {integrity: sha512-Y0BgJHjGcwEEImIBmhjNpy3wqxT+45cxILUgQg8eLb5bnq0EIYARVD+TODs1Zus1zs86R7eWtUcVG2S3/a/Xhw==}
     peerDependencies:
       '@cloudflare/vite-plugin': ^1.36.0
       vite: ^7.0.0 || ^8.0.0
@@ -5049,7 +5049,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0)
 
-  '@webdiy/starter-vite-preset@2.0.0(@cloudflare/vite-plugin@1.63.1(@types/node@22.19.18)(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))(wrangler@4.149.0(@cloudflare/workers-types@5.20261012.1)(@types/node@22.19.18)))(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))':
+  '@webdiy/starter-vite-preset@2.0.1(@cloudflare/vite-plugin@1.63.1(@types/node@22.19.18)(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))(wrangler@4.149.0(@cloudflare/workers-types@5.20261012.1)(@types/node@22.19.18)))(vite@8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0))':
     dependencies:
       vite: 8.3.4(@types/node@22.19.18)(esbuild@0.28.2)(jiti@2.7.0)
     optionalDependencies:
