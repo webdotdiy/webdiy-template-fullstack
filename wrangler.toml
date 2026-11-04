@@ -8,12 +8,18 @@ compatibility_flags = ["nodejs_compat"]
 
 # `@cloudflare/vite-plugin` builds the frontend into `./dist/client` and
 # the worker into `./dist/<worker-name>`. Workers Static Assets serves
-# `dist/client` via the ASSETS binding; the Hono app routes /api/* and
-# falls through to ASSETS for static paths.
+# `dist/client` via the ASSETS binding.
+#
+# `run_worker_first` sends every /api/* request to the Hono app before any
+# file lookup, browser page loads included (OAuth callbacks, redirects).
+# Other paths are answered from dist/client, and a page load that matches no
+# file gets index.html without running the Worker. Add a pattern here for any
+# other path the Worker must answer when a browser opens it directly.
 [assets]
 directory = "./dist/client"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
 
 # Supabase env vars — set production secrets via `wrangler secret put`.
 # Use `.dev.vars` for local development (gitignored). Do NOT inline
